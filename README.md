@@ -6,6 +6,10 @@ This projects scrubs the drug related data available via drugbank.ca and loads i
 
 ## Configuration
 
+### Drugs of interest
+abc
+
+### DB connection/credentials
 abc
 
 ## Running
