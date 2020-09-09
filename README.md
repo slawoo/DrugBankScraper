@@ -19,7 +19,7 @@ The example 'drugs.txt' file contains a list of new-line separated DrugBank drug
 
 #### Data directory
 
-You can specify where the scripts will store intermediate data (HTML files, JSON files). You can set this location via data_dir in [config] section of 'config.ini' file. By default, it is the current working directory.
+You can specify where the scripts will store intermediate data (HTML files, JSON files). This location needs to be set via data_dir in [config] section of 'config.ini' file. By default, it is the current working directory.
 
 #### DB connection/credentials
 
@@ -29,21 +29,21 @@ DB details (host, port, database, user, password) need to be configured in confi
 
 #### Initialize db schema
 
-If the schema is not yet present in your target database, run the following command to initialize it:
+If the schema is not yet present in your target database, you can run the following command to initialize it.
 ```
 python create_drugbank_schema.py
 ```
 
 #### Running full scraper
 
-To run the entire process that will load the tables for all the drug ids from the input file ('drugs.txt') please execute the following command:
+Entire process, which will download the data and load the tables based on the drug ids from the input file, can be executed in one step as shown below.
 ```
 python scrape_drugbank.py drugs.txt
 ```
 
-#### Step-by-step execution
+#### Manual step-by-step execution
 
-In various situations (e.g. debugging code or data problem) you might want to perform the steps individually. For each drug id there are 3 steps performed:
+In various situations (e.g. debugging code or data problem) you might want to perform individual steps manually. For each drug id there are 3 steps performed:
 * get drug page HTML from drugbank.ca
 * convert raw HTML page to JSON data
 * load target tables with the extracted drug information
@@ -72,8 +72,8 @@ $
 #### Schema
 
 Data model consists of two tables 'drug' and 'drug_bond'. These tables are in one-to-many relationship, where 'drug' is the master table for the extracted drug properties and 'drug_bonds' contains corresponding
-bonds for a drug (targets, enzymes, carriers and transporters) if these were listed on a drug page. Most of the properties for a drug, are contained in JSON fields. This is for simplicity and flexibility of the 
-model. 
+bonds for a drug (targets, enzymes, carriers and transporters). Most of the properties for a drug, are contained in JSON fields. This is for simplicity and flexibility of the 
+data model. 
 ```
                                   +-----------------------------+
                                   | drug                 |      |
