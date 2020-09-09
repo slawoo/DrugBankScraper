@@ -105,7 +105,7 @@ model.
 
 #### Example queries
 
-###### Retrieve drug's DrugBank id, name, SMILES string, external ids and synonyms:
+##### Retrieve drug's DrugBank id, name, SMILES string, external ids and synonyms:
 ```sql
 select 
   drug_id, 
@@ -126,7 +126,7 @@ Result:
 
 ```
 
-###### Retrieve Gene Name and Actions for every Target of a drug:
+##### Retrieve Gene Name and Actions for every Target of a drug:
 ```sql
 select 
   d.drug_id, 
