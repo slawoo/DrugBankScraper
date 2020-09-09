@@ -1,6 +1,6 @@
 """
 Usage: python scrape_drugbank.py <file>
-<file> - text file containing new-line separated list of drugs ids to process (e.g. DB00007)
+<file> - text file containing new-line separated list of drug ids to process (e.g. DB00007)
 """
 
 import logging
@@ -17,7 +17,7 @@ def read_config():
     return cfg
 
 
-# Initialization of global objects: config, logger and db_conn
+# Initialization of global objects: logger and config
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()

@@ -23,7 +23,7 @@ def create_tables():
         )
         """,
         """
-        CREATE TABLE drug_bond (
+        CREATE OR REPLACE TABLE drug_bond (
             bond_id SERIAL PRIMARY KEY,
             drug_id TEXT NOT NULL,
             bond_type TEXT NOT NULL,
@@ -32,7 +32,9 @@ def create_tables():
                 REFERENCES drug (drug_id)
         )
         """)
+
     conn = None
+
     try:
         logger.info("Initializing DB connection.")
         conn = create_db_conn()
