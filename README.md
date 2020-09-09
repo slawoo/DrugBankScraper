@@ -6,7 +6,7 @@ This repo contains code for harvesting the drug related info available via drugb
 
 ## Configuration
 
-The code has been tested with Python 3.6. It requires ConfigParser, psycopg2 and BeautifulSoup4 modules to be run. You will require Postgres database to be able to load the extracted data into it.  
+The code has been tested with Python 3.6. It requires ConfigParser, psycopg2 and BeautifulSoup4 modules in order run. You will require Postgres database to be able to load the extracted data into it.  
 In order to install the dependencies please run:
 ```
 pip install -r requirements.txt
@@ -71,6 +71,87 @@ $
 
 #### Schema
 
+Data model consists of two tables 'drug' and 'drug_bond'. These tables are in one-to-many relationship, where 'drug' is the master table for the extracted drug properties and 'drug_bonds' contains corresponding
+bonds for a drug (targets, enzymes, carriers and transporters) if these were listed on a drug page. Most of the properties for a drug, are contained in JSON fields. This is for simplicity and flexibility of the 
+model. 
+```
+                                  +-----------------------------+
+                                  | drug                 |      |
+                                  |----------------------|------|
+                         +--------+ drug_id (PK)         |text  |
+                         |        | drug_name            |text  |
+                         |        | identification       |json  |
+                         |        | pharmacology         |json  |
+                         |        | interactions         |json  |
+                         |        | products             |json  |
+                         |        | categories           |json  |
+                         |        | chemical_identifiers |json  |
+                         |        | references           |json  |
+                         |        | clinical_trials      |json  |
+                         |        | pharmacoeconomics    |json  |
+                         |        | properties           |json  |
+                         |        | metadata             |text  |
+                         |        +-----------------------------+
+                         |
+                         |        +-----------------------------+
+                         |        | drug_bond            |      |
+                         |        |----------------------|------|
+                         |        | bond_id (PK)         |serial|
+                         +------o<+ drug_id (FK)         |text  |
+                                  | bond_type            |text  |
+                                  | properties           |json  |
+                                  +-----------------------------+
+```
 
 #### Example queries
-abc
+
+###### Retrieve drug's DrugBank id, name, SMILES string, external ids and synonyms:
+```sql
+select 
+  drug_id, 
+  drug_name, 
+  identification ->> 'External IDs' as "External IDs", 
+  identification ->> 'Synonyms' as "Synonyms",
+  chemical_identifiers ->> 'SMILES' as "SMILES"
+from drug
+where drug_id in ('DB00619', 'DB00734');
+```
+Result:
+```
+ drug_id |  drug_name  |                  External IDs                  |                                                   Synonyms                                                   |                                  SMILES                                  
+---------+-------------+------------------------------------------------+--------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------
+ DB00619 | Imatinib    | ["CGP-57148B"]                                 | ["Imatinib", "Imatinibum", "α-(4-methyl-1-piperazinyl)-3'-((4-(3-pyridyl)-2-pyrimidinyl)amino)-p-toluidide"] | CN1CCN(CC2=CC=C(C=C2)C(=O)NC2=CC(NC3=NC=CC(=N3)C3=CN=CC=C3)=C(C)C=C2)CC1
+ DB00734 | Risperidone | ["R-64,766", "R-64766", "RCN-3028", "RCN3028"] | ["Risperidona", "Rispéridone", "Risperidone", "Risperidonum"]                                                | CC1=C(CCN2CCC(CC2)C2=NOC3=C2C=CC(F)=C3)C(=O)N2CCCCC2=N1
+(2 rows)
+
+```
+
+###### Retrieve Gene Name and Actions for every Target of a drug:
+```sql
+select 
+  d.drug_id, 
+  d.drug_name, 
+  db.properties ->> 'Gene Name' as "Gene Name", 
+  db.properties ->> 'Actions' as "Actions" 
+from drug d 
+join drug_bond db on db.drug_id=d.drug_id 
+where 
+  db.bond_type='target'
+  and d.drug_id = 'DB00619';
+```
+
+Result:
+```
+ drug_id | drug_name | Gene Name |            Actions            
+---------+-----------+-----------+-------------------------------
+ DB00619 | Imatinib  | BCR       | ["Inhibitor"]
+ DB00619 | Imatinib  | KIT       | ["Antagonist", "Multitarget"]
+ DB00619 | Imatinib  | RET       | ["Inhibitor"]
+ DB00619 | Imatinib  | NTRK1     | ["Antagonist"]
+ DB00619 | Imatinib  | CSF1R     | ["Antagonist"]
+ DB00619 | Imatinib  | PDGFRA    | ["Antagonist"]
+ DB00619 | Imatinib  | DDR1      | ["Antagonist"]
+ DB00619 | Imatinib  | ABL1      | ["Inhibitor"]
+ DB00619 | Imatinib  | PDGFRB    | ["Antagonist"]
+(9 rows)
+```

@@ -45,7 +45,10 @@ def drug_page_to_json(drug_id, source_file, target_file):
                     list_vals = v.find_all('div')
                     if list_vals:
                         list_vals = [lv.text.strip() for lv in list_vals]
-                    bond[k.text] = v.text.strip() if not list_vals else list_vals
+                        bond[k.text.strip()] = list_vals
+                    else:
+                        bond[k.text.strip()] = v.text.strip()
+
                 extracted_data[bond_name].append(bond)
 
     logger.info(f"Extracting data from HTML file: {source_file}")
@@ -57,11 +60,16 @@ def drug_page_to_json(drug_id, source_file, target_file):
     for section in section_to_id:
         section_header = soup.find(id=section_to_id[section])
         dl = section_header.find_next()
-        keys = [tag.text.strip() for tag in dl.find_all('dt')]
-        vals = [tag.text.strip() for tag in dl.find_all('dd')]
+        keys = dl.find_all('dt')
+        vals = dl.find_all('dd')
         extracted_data[section] = {}
         for k, v in zip(keys, vals):
-            extracted_data[section][k] = v
+            list_vals = v.find_all('li')
+            if list_vals:
+                list_vals = [lv.text.strip() for lv in list_vals]
+                extracted_data[section][k.text.strip()] = list_vals
+            else:
+                extracted_data[section][k.text.strip()] = v.text.strip()
 
     extract_bonds('Targets', targets_id, extracted_data)
     extract_bonds('Enzymes', enzymes_id, extracted_data)
@@ -72,7 +80,7 @@ def drug_page_to_json(drug_id, source_file, target_file):
 
     logger.info(f"Saving JSON data to {target_file}")
     with open(target_file, 'w') as f:
-        f.write(json.dumps(extracted_data, indent=4))
+        json.dump(extracted_data, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ def create_tables():
         )
         """,
         """
-        CREATE OR REPLACE TABLE drug_bond (
+        CREATE TABLE drug_bond (
             bond_id SERIAL PRIMARY KEY,
             drug_id TEXT NOT NULL,
             bond_type TEXT NOT NULL,

@@ -17,11 +17,13 @@ def load_drug_tables(drug_id, source_file, db_conn):
 
     logger.info(f"Loading data from {source_file} to database.")
 
+    def utf8_json(data):
+        return json.dumps(data, ensure_ascii=False)
+
     def insert_bonds(drug_id, bond_type, bonds_array):
         for bond in bonds_array:
             cur.execute("""INSERT INTO drug_bond(drug_id, bond_type, properties) 
-                           VALUES (%s, %s, %s)""", (drug_id, bond_type, json.dumps(bond)))
-
+                           VALUES (%s, %s, %s)""", (drug_id, bond_type, utf8_json(bond)))
     with open(source_file, 'r') as json_file:
         data = json.load(json_file)
 
@@ -29,11 +31,11 @@ def load_drug_tables(drug_id, source_file, db_conn):
                                     products, categories, chemical_identifiers, "references",
                                     clinical_trials, pharmacoeconomics, properties, metadata)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                (drug_id, data['Identification']['Name'], json.dumps(data['Identification']),
-                 json.dumps(data['Pharmacology']), json.dumps(data['Interactions']), json.dumps(data['Products']),
-                 json.dumps(data['Categories']), json.dumps(data['Chemical Identifiers']),
-                 json.dumps(data['References']), json.dumps(data['Clinical Trials']),
-                 json.dumps(data['Pharmacoeconomics']), json.dumps(data['Properties']), data['metadata']))
+                (drug_id, data['Identification']['Name'], utf8_json(data['Identification']),
+                 utf8_json(data['Pharmacology']), utf8_json(data['Interactions']), utf8_json(data['Products']),
+                 utf8_json(data['Categories']), utf8_json(data['Chemical Identifiers']),
+                 utf8_json(data['References']), utf8_json(data['Clinical Trials']),
+                 utf8_json(data['Pharmacoeconomics']), utf8_json(data['Properties']), data['metadata']))
 
     insert_bonds(drug_id, 'target', data['Targets'])
     insert_bonds(drug_id, 'enzyme', data['Enzymes'])
